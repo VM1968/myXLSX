@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+    <meta charset="utf-8" />
+
+    <script src="js/jszip.min.js"> </script>
+    <script src="js/myXLSX.js"></script>
+    <script src="js/ssf.js"></script>
+
+    </style>
+</head>
+
+<body>
+
+    <br>
+    Based on the <br>
+    https://github.com/SheetJS <br>
+    https://github.com/SheetJS/ssf <br>
+    https://stuk.github.io/jszip/ <br>
+    <br>
+    <br>
+    <label for="file">Read EXCEL file</label>
+    <input type="file" id="file" value="" accept=".xlsx">
+
+    <div id="xltable">
+    </div>
+
+    <script>
+        
+
+        //загрузка файла по кнопке
+        function handleFile(e) {
+            let files = e.target.files;
+            let f = files[0];
+            let htmltbl = ""
+            MXLSX.readZIP(f).then(value => {
+                let htdiv = document.getElementById('xltable');
+                while (htdiv.firstChild) {
+                    htdiv.removeChild(htdiv.firstChild);
+                }
+               
+               //htdiv.insertAdjacentHTML(`<style></style>`);
+                //let tblHTML=value.StyleCSS+value.HTMLstr.join('');
+                let tblHTML=value.StyleCSS+value.HTMLstr;
+               // htdiv.appendChild(value.HTML);
+               htdiv.insertAdjacentHTML("afterBegin",tblHTML);
+
+            }
+            );
+
+        }
+
+        var _file = document.getElementById('file');
+        _file.addEventListener('change', handleFile, false);
+
+    </script>
+</body>
+
+</html>
