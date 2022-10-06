@@ -1,7 +1,7 @@
 # myXLSX
-Based on the 
-    https://github.com/SheetJS 
-    https://github.com/SheetJS/ssf 
-    https://stuk.github.io/jszip/
+Based on the <br>
+    https://github.com/SheetJS <br>
+    https://github.com/SheetJS/ssf <br>
+    https://stuk.github.io/jszip/ <br>
     
     see index.html
