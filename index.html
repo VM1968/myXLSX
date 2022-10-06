@@ -9,6 +9,10 @@
     <script src="js/myXLSX.js"></script>
     <script src="js/ssf.js"></script>
 
+    <style>
+        .clicked {
+            cursor: pointer;
+        }
     </style>
 </head>
 
@@ -24,11 +28,22 @@
     <label for="file">Read EXCEL file</label>
     <input type="file" id="file" value="" accept=".xlsx">
 
+    <br>
+    <br>
+
+    <strong>File</strong> 
+    <span id="mylink" class="clicked">formula.xlsx</span>,
+    <span id="mylink2" class="clicked">theme.xlsx</span>,
+    <span id="mylink3" class="clicked">indexed.xlsx</span>
+    
+
+
+
     <div id="xltable">
     </div>
 
     <script>
-        
+
 
         //загрузка файла по кнопке
         function handleFile(e) {
@@ -40,20 +55,61 @@
                 while (htdiv.firstChild) {
                     htdiv.removeChild(htdiv.firstChild);
                 }
-               
-               //htdiv.insertAdjacentHTML(`<style></style>`);
+
+                //htdiv.insertAdjacentHTML(`<style></style>`);
                 //let tblHTML=value.StyleCSS+value.HTMLstr.join('');
-                let tblHTML=value.StyleCSS+value.HTMLstr;
-               // htdiv.appendChild(value.HTML);
-               htdiv.insertAdjacentHTML("afterBegin",tblHTML);
+                let tblHTML = value.StyleCSS + value.HTMLstr;
+                // htdiv.appendChild(value.HTML);
+                htdiv.insertAdjacentHTML("afterBegin", tblHTML);
 
             }
             );
 
         }
 
-        var _file = document.getElementById('file');
+        function linkFile(e) {
+            
+            let uri = e.target.innerText;
+            
+            var oReq = new XMLHttpRequest();
+            oReq.open("GET", uri, true);
+            oReq.responseType = "arraybuffer";
+
+            oReq.onload = function (oEvent) {
+                let blob = new Blob([oReq.response]);
+                let reader = new FileReader();
+                // var viewer = Ext.getCmp("PDFtoPrint");
+                reader.addEventListener("loadend", function () {
+                    let f = blob;
+                    let htmltbl = ""
+                    MXLSX.readZIP(f).then(value => {
+                        let htdiv = document.getElementById('xltable');
+                        while (htdiv.firstChild) {
+                            htdiv.removeChild(htdiv.firstChild);
+                        }
+                        let tblHTML = value.StyleCSS + value.HTMLstr;
+                        htdiv.insertAdjacentHTML("afterBegin", tblHTML);
+                    }
+                    );
+                });
+                reader.readAsText(blob);//, "Windows-1251");
+            };
+
+            oReq.send();
+        }
+
+        let _file = document.getElementById('file');
         _file.addEventListener('change', handleFile, false);
+
+
+        let _mylink = document.getElementById('mylink');
+        _mylink.addEventListener('click', linkFile, false);
+
+        let _mylink2 = document.getElementById('mylink2');
+        _mylink2.addEventListener('click', linkFile, false);
+        
+        let _mylink3 = document.getElementById('mylink3');
+        _mylink3.addEventListener('click', linkFile, false);
 
     </script>
 </body>
