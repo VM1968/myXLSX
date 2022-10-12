@@ -2,6 +2,6 @@
 Based on the <br>
     https://github.com/SheetJS <br>
     https://github.com/SheetJS/ssf <br>
-    https://stuk.github.io/jszip/ <br>
+     https://github.com/Stuk/jszip <br>
     
     see index.html
