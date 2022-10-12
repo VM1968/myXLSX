@@ -6,14 +6,14 @@ class FileReaderEx extends FileReader {
         super();
     }
 
-    #readAs(blob, ctx) {
+    readAs(blob, ctx) {
         return new Promise((res, rej) => {
             super.addEventListener("load", ({ target }) => res(target.result));
             super.addEventListener("error", ({ target }) => rej(target.error));
             super[ctx](blob);
         });
     }
-    #readAsEnc(blob, encoding, ctx) {
+    readAsEnc(blob, encoding, ctx) {
         return new Promise((res, rej) => {
             super.addEventListener("load", ({ target }) => res(target.result));
             super.addEventListener("error", ({ target }) => rej(target.error));
@@ -22,20 +22,20 @@ class FileReaderEx extends FileReader {
     }
 
     readAsArrayBuffer(blob) {
-        return this.#readAs(blob, "readAsArrayBuffer");
+        return this.readAs(blob, "readAsArrayBuffer");
     }
 
     readAsDataURL(blob) {
-        return this.#readAs(blob, "readAsDataURL");
+        return this.readAs(blob, "readAsDataURL");
     }
 
     readAsText(blob) {
-        return this.#readAs(blob, "readAsText");
+        return this.readAs(blob, "readAsText");
     }
 
     readAsTextEnc(blob, encoding) {
         console.log(encoding);
-        return this.#readAsEnc(blob, encoding, "readAsText");
+        return this.readAsEnc(blob, encoding, "readAsText");
     }
 }
 
@@ -139,10 +139,10 @@ function findMerged(idcell) {
 
     let fcell = {};
 
-    fcell=mcells.find(el=>el.id===idcell);
+    fcell = mcells.find(el => el.id === idcell);
 
     if (!fcell) {
-        fcell={"id" : idcell,"enabled" : true}
+        fcell = { "id": idcell, "enabled": true }
     }
     return fcell;
 }
@@ -492,22 +492,23 @@ function parseStyleCSS(xlStyle) {
 
     //cellXfs CSS
     //let classCSS = [];
-    classCSS='<style>';
+    classCSS = '<style>';
 
     //classCSS.push('table{border-collapse: collapse;table-layout: fixed;}');
     // table-layout: fixed;       border: 1px solid #e6e6e6;
     //htstyle.push('td{border: 1px solid #e6e6e6;}');    
-    classCSS+='table{border-collapse: collapse;table-layout: fixed;}';
+    classCSS += 'table{border-collapse: collapse;table-layout: fixed;}';
 
     //classCSS.push('td{padding-top:1px;padding-right:1px;padding-left:1px;vertical-align: bottom;white-space: nowrap;}');
-    classCSS+='td{padding-top:1px;padding-right:1px;padding-left:1px;vertical-align: bottom;white-space: nowrap;}'
+    classCSS += 'td{padding-top:2px;padding-right:2px;padding-left:5px;vertical-align: bottom;white-space: nowrap;}'
 
     //classCSS.push('td.Number {text-align: end;}');
-    classCSS+='td.Number {text-align: end;}';
+    classCSS += 'td.Number {text-align: end;}';
     //    console.log(xlStyle);
+    classCSS+='.inlineStr {white-space: nowrap;overflow: hidden;text-overflow: ellipsis;}'; //background-color: red;
+    classCSS+='.inlineStr:hover {white-space: normal;z-index: 1}';
 
     xlStyle.styleSheet.cellXfs.xf.forEach(function (item, ind) {
-        console
         strstyle = '.cstyle' + ind + ' {';
         strstyle += fontsCSS[item["@attributes"]["fontId"]];
         strstyle += fillsCSS[item["@attributes"]["fillId"]];
@@ -522,11 +523,11 @@ function parseStyleCSS(xlStyle) {
 
         strstyle += '}';
         //classCSS.push(strstyle);
-        classCSS+=strstyle;
+        classCSS += strstyle;
     })
 
     //console.log(classCSS);
-    classCSS+='</style>';
+    classCSS += '</style>';
     return classCSS;
 }
 
@@ -555,7 +556,8 @@ function parseSheet(XLsheet, sst, styles) {
                 //строка непосредственно в ячейке
                 mcolumn = {
                     "id": column["@attributes"]["r"],
-                    "v": column.is.t["#text"]
+                    "v": column.is.t["#text"],
+                    "inlineStr":1  //возможен длинный текст 
                 };
                 if ("s" in column["@attributes"]) {
                     mcolumn.style = column["@attributes"]["s"]//styles.CellXf[column["@attributes"]["s"]]
@@ -571,7 +573,7 @@ function parseSheet(XLsheet, sst, styles) {
                     v = "";
                     if (column.v) {
                         if (is_datefmt(fmt)) {
-                            v = SSF.format(fmt, parseExcelDate(column.v["#text"])) 
+                            v = SSF.format(fmt, parseExcelDate(column.v["#text"]))
                             //v = SSF.format(fmt, column.v["#text"]) 
                         } else {
                             v = SSF.format(fmt, Number(column.v["#text"]))
@@ -587,7 +589,7 @@ function parseSheet(XLsheet, sst, styles) {
                 mcolumn = {
                     "id": column["@attributes"]["r"],
                     "v": v,
-                    "type" : "Number"
+                    "type": "Number"
                 };
                 if ("s" in column["@attributes"]) {
                     mcolumn.style = column["@attributes"]["s"]//styles.CellXf[column["@attributes"]["s"]]
@@ -708,7 +710,7 @@ function parseWB(xlWB) {
 
 let mcells = [];
 function parseMerge(mC) {
-    mcells=[];
+    mcells = [];
     let mc = '';
     if (mC) {
         //console.log(mC);
@@ -739,7 +741,7 @@ function parseMerge(mC) {
 
                         }
                         mcells.push(cell);
-                        
+
                         //console.log(cell);
                     }
                 }
@@ -814,17 +816,17 @@ function toHTMLstr(json, ncols) {
 
     //let htcolgroup = document.createElement('colgroup');
     //xlTable.push('<colgroup>');
-    xlTable+='<colgroup>';
-    
+    xlTable += '<colgroup>';
+
     cols.forEach(col => {
         //xlTable.push(`<col width="${Math.round(col.width * kf)}"></col>`);
-        xlTable+=`<col width="${Math.round(col.width * kf)}"></col>`;
+        xlTable += `<col width="${Math.round(col.width * kf)}"></col>`;
     });
     //xlTable.push('</colgroup>');
-    xlTable+='</colgroup>';
+    xlTable += '</colgroup>';
 
     //xlTable.push('<tbody>');
-    xlTable+='<tbody>';
+    xlTable += '<tbody>';
 
     xldata.forEach(row => {
         c = 0;
@@ -832,27 +834,27 @@ function toHTMLstr(json, ncols) {
         while ((row.r - r) > 1) {
             //Add default row
             //xlTable.push(`<tr height="${ht}"></tr>`);
-            xlTable+=`<tr height="${ht}"></tr>`;
+            xlTable += `<tr height="${ht}"></tr>`;
             r++;
         }
 
         r = row.r;
         if (row.ht) {
             //xlTable.push(`<tr height="${Math.round(row.ht * kfh)}">`);
-            xlTable+=`<tr height="${Math.round(row.ht * kfh)}">`;
+            xlTable += `<tr height="${Math.round(row.ht * kfh)}">`;
         } else {
             //xlTable.push(`<tr height="${ht}">`);
-            xlTable+=`<tr height="${ht}">`;
+            xlTable += `<tr height="${ht}">`;
         }
-        
+
         row.columns.forEach(col => {
 
             ic = idc(col.id);
             while ((ic - c) > 1) {
                 //пропущенные ячейки для HTML добавить
-                cellid = findMerged(String.fromCharCode(c + 65) + r);   
+                cellid = findMerged(String.fromCharCode(c + 65) + r);
                 if (cellid.enabled) {
-                    tdattr='';
+                    tdattr = '';
                     if (cols[c]) {
                         tdattr += ` width="${Math.round(cols[c].width * kf)}"`;
                         widthrow += Math.round(cols[c].width * kf);
@@ -861,13 +863,13 @@ function toHTMLstr(json, ncols) {
                         tdattr += ` width="${wd}"`;
                         widthrow += wd;
                     }
-                   
-                   tdattr +=` id="${String.fromCharCode(c + 65) + r}"`;
-                    if (cellid.colspan) { tdattr +=` colspan="${cellid.colspan}"`};
-                    if (cellid.rowspan) { tdattr +=` rowspan="${cellid.rowspan}"`};
-                  
+
+                    tdattr += ` id="${String.fromCharCode(c + 65) + r}"`;
+                    if (cellid.colspan) { tdattr += ` colspan="${cellid.colspan}"` };
+                    if (cellid.rowspan) { tdattr += ` rowspan="${cellid.rowspan}"` };
+
                     //xlTable.push(`<td ${tdattr} ></td>`);
-                    xlTable+=`<td ${tdattr} ></td>`;
+                    xlTable += `<td ${tdattr} ></td>`;
                 }
                 c++;
             }
@@ -875,7 +877,7 @@ function toHTMLstr(json, ncols) {
             cellid = findMerged(String.fromCharCode(c + 65) + r);
             //console.log(cols[c]);
             if (cellid.enabled) {
-                tdattr ='';
+                tdattr = '';
                 classattr = '';
 
                 // if ("whitespace" in col && cols[c]) {
@@ -884,14 +886,14 @@ function toHTMLstr(json, ncols) {
 
                 if (col.style) {
                     //htcell.classList.add("cstyle" + col.style);
-                    classattr +=`cstyle${col.style}`;
+                    classattr += `cstyle${col.style}`;
                 }
-                if (col.type) {classattr +=` ${col.type}`};
+                if (col.type) { classattr += ` ${col.type}` };
 
-                tdattr +=` id="${String.fromCharCode(c + 65) + r}"`
-                
+                tdattr += ` id="${String.fromCharCode(c + 65) + r}"`
+
                 if (cellid.colspan) {
-                    tdattr +=` colspan="${cellid.colspan}"`
+                    tdattr += ` colspan="${cellid.colspan}"`
                 } else {
                     if (cols[c]) {
                         tdattr += ` width="${Math.round(cols[c].width * kf)}"`;
@@ -903,24 +905,32 @@ function toHTMLstr(json, ncols) {
                         widthrow += wd;
                     }
                 };
-                if (cellid.rowspan) {  tdattr +=` rowspan="${cellid.rowspan}"`};
+                if (cellid.rowspan) { tdattr += ` rowspan="${cellid.rowspan}"` };
 
                 //xlTable.push(`<td class="${classattr}" ${tdattr} >${col.v}</td>`);
-                xlTable+=`<td class="${classattr}" ${tdattr} >${col.v}</td>`;
+                if (col.v) {
+                    if (col.inlineStr){
+                        xlTable += `<td class="${classattr}" ${tdattr} ><div class="inlineStr">${col.v}</div></td>`;
+                    }else{
+                     xlTable += `<td class="${classattr}" ${tdattr} >${col.v}</td>`;
+                    }
+                } else {
+                    xlTable += `<td class="${classattr}" ${tdattr} ></td>`;
+                }
             }
             c++;
         })
         //xlTable.push('</tr>');
-        xlTable+='</tr>';
+        xlTable += '</tr>';
         maxwidth = (maxwidth < widthrow) ? widthrow : maxwidth;
     });
 
     // xlTable[0]=(`<table width="${maxwidth}">`);
     // xlTable.push('</table>');
-//Start
-    xlTable=`<table width="${maxwidth}">`+xlTable;
-//END    
-    xlTable+='</table>';
+    //Start
+    xlTable = `<table width="${maxwidth}">` + xlTable;
+    //END    
+    xlTable += '</table>';
     return xlTable;
 }
 
@@ -944,7 +954,7 @@ function make_xlsx_lib(MXLSX) {
                 //Styles
                 let xmlfile = await zip.file("xl/styles.xml").async("string");
                 let XmlNode = new DOMParser().parseFromString(xmlfile, 'text/xml');
-                
+
                 //numFmt for Cells
                 cellXfs = parseStyle(xmlToJson(XmlNode));
                 files.StyleCSS = parseStyleCSS(xmlToJson(XmlNode));
@@ -993,7 +1003,7 @@ function make_xlsx_lib(MXLSX) {
                 //files.MergeCells = nmerge;
 
                 //files.HTML = toHTML(nsheet, ncols);
-                files.HTMLstr=toHTMLstr(nsheet, ncols);
+                files.HTMLstr = toHTMLstr(nsheet, ncols);
 
                 //console.log(files);
                 resolve(files);
