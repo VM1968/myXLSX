@@ -1,6 +1,6 @@
-
 let MXLSX = {};
-
+MXLSX.SelectedRow=null;
+//FileReader async 
 class FileReaderEx extends FileReader {
     constructor() {
         super();
@@ -43,6 +43,9 @@ const files = {};
 
 const position = ["left", "right", "top", "bottom"];
 
+
+//кодировки цвета 
+https://stackoverflow.com/questions/2353211/hsl-to-rgb-color-conversion
 function RGBToHSL(R, G, B) {
     let r = R / 255;
     let g = G / 255;
@@ -71,7 +74,6 @@ function RGBToHSL(R, G, B) {
     // return [Math.round(H), Math.round(S * 100), Math.round(L * 100)];
     return [H, S * 100, L * 100];
 }
-
 function HSLToRGB(h, s, l) {
     s /= 100;
     l /= 100;
@@ -81,14 +83,12 @@ function HSLToRGB(h, s, l) {
         l - a * Math.max(-1, Math.min(k(n) - 3, Math.min(9 - k(n), 1)));
     return [Math.round(255 * f(0)), Math.round(255 * f(8)), Math.round(255 * f(4))];
 };
-
 function rgbToHex(r, g, b) {
     let rhex = r.toString(16);
     let ghex = g.toString(16);
     let bhex = b.toString(16);
     return (rhex.length == 1 ? "0" + rhex : rhex) + (ghex.length == 1 ? "0" + ghex : ghex) + (bhex.length == 1 ? "0" + bhex : bhex);
 }
-
 function CalculateFinalLumValue(tint, lum) {
     if (!tint) {
         return lum;
@@ -102,7 +102,6 @@ function CalculateFinalLumValue(tint, lum) {
     }
     return lum1;
 }
-
 function indexedToRGB(h, tint) {
     //console.log(tint);
     //console.log(h);
@@ -127,16 +126,22 @@ function indexedToRGB(h, tint) {
 }
 
 
+// проверка подходит ли для отображения дат
 function is_datefmt(fmt) {
     const regex = /[msyh]/g;
     if ((m = regex.exec(fmt)) !== null) { return true }
     else { return false }
 }
+//В Excel свой способ хранения дат
+function parseExcelDate(excelSerialDate) {
+    //(Excel_time-DATE(1970,1,1))*86400 с   //*1000 мс
+    return new Date(Math.round((excelSerialDate - 25569) * 86400000));
+};
+
 
 function findMerged(idcell) {
     //находится ли в списке объединяемых ячеек с дополнительными параметрами "rowspan","colspan"
     //иначе обычная видимая ячейка
-
     let fcell = {};
 
     fcell = mcells.find(el => el.id === idcell);
@@ -147,6 +152,8 @@ function findMerged(idcell) {
     return fcell;
 }
 
+
+//номер колонки по ID ячейки
 function idc(str) {
     //id column for cell "A5" = 1
     const regex = /[A-Z]{1,}/;
@@ -160,6 +167,7 @@ function idc(str) {
     return id
 }
 
+//номер строки по ID ячейки
 function idr(str) {
     //id row for cell "A5" = 5
     const regex = /[0-9]{1,}/;
@@ -170,12 +178,7 @@ function idr(str) {
     return id
 }
 
-function parseExcelDate(excelSerialDate) {
-    //(Excel_time-DATE(1970,1,1))*86400 с   //*1000 мс
-    return new Date(Math.round((excelSerialDate - 25569) * 86400000));
-};
-
-
+//https://gist.github.com/chinchang/8106a82c56ad007e27b1
 function xmlToJson(xml) {
     let js_obj = {};
     if (xml.nodeType == 1) {
@@ -207,7 +210,6 @@ function xmlToJson(xml) {
     }
     return js_obj;
 }
-
 
 //numFmtId
 function init_table(t) {
@@ -242,28 +244,30 @@ function init_table(t) {
     t[56] = '"上午/下午 "hh"時"mm"分"ss"秒 "';
 }
 
-let charset = [];
-charset[0] = "Ansi"
-charset[1] = "Default"
-charset[2] = "Symbol"
-charset[77] = "Mac"
-charset[128] = "ShiftJIS"
-charset[129] = "Hangeul"
-charset[130] = "Johab"
-charset[134] = "GB2312"
-charset[136] = "ChineseBig5"
-charset[161] = "Greek"
-charset[162] = "Turkish"
-charset[163] = "Vietnamese"
-charset[177] = "Hebrew"
-charset[178] = "Arabic"
-charset[186] = "Baltic"
-charset[204] = "Russian"
-charset[222] = "Thai"
-charset[238] = "EastEurope"
-charset[255] = "Oem"
+// //пока не использовал
+// let charset = [];
+// charset[0] = "Ansi"
+// charset[1] = "Default"
+// charset[2] = "Symbol"
+// charset[77] = "Mac"
+// charset[128] = "ShiftJIS"
+// charset[129] = "Hangeul"
+// charset[130] = "Johab"
+// charset[134] = "GB2312"
+// charset[136] = "ChineseBig5"
+// charset[161] = "Greek"
+// charset[162] = "Turkish"
+// charset[163] = "Vietnamese"
+// charset[177] = "Hebrew"
+// charset[178] = "Arabic"
+// charset[186] = "Baltic"
+// charset[204] = "Russian"
+// charset[222] = "Thai"
+// charset[238] = "EastEurope"
+// charset[255] = "Oem"
 
 //indexed color c# ARGB Value
+//ID заданных стандартных  цветов
 let indexed = [];
 indexed[0] = "00000000";
 indexed[1] = "00FFFFFF";
@@ -332,6 +336,7 @@ indexed[63] = "00333333";
 indexed[64] = "00000000";//"SystemForeground"; черный
 indexed[65] = "00FFFFFF";//"SystemBackground"; белый
 
+//ID заданных стандартных  цветовых схем
 let themecolor = [];
 themecolor[0] = "ffffff";
 themecolor[1] = "000000";
@@ -345,17 +350,19 @@ themecolor[8] = "5b9bd5";
 themecolor[9] = "70ad47";
 
 
+//дополнительные пользовательские форматы в Excel
 function parseStyle(xlStyle) {
+    //console.log(xlStyle);
     //No CSS rule
     let styles = {};
 
     //NumberFmt
     //Числовые форматы
     let numFmt = [];
+
     //стандартные числовые форматы
     init_table(numFmt);
-
-    //дополнительные форматы для чисел, заданные в файлк EXCEL
+    //дополнительные форматы для чисел, заданные в файле EXCEL
     if ("numFmts" in xlStyle.styleSheet) {
         if (Array.isArray(xlStyle.styleSheet.numFmts.numFmt)) {
             xlStyle.styleSheet.numFmts.numFmt.forEach(fmt => {
@@ -370,11 +377,16 @@ function parseStyle(xlStyle) {
 
     //CellXf
     let cellxfs = [];
-    xlStyle.styleSheet.cellXfs.xf.forEach(cxf => {
-        cellxf = {};
-        cellxf.numFmt = numFmt[cxf["@attributes"]["numFmtId"]];
-        cellxfs.push(cellxf);
-    })
+    if (Array.isArray(xlStyle.styleSheet.cellXfs.xf)) {
+        xlStyle.styleSheet.cellXfs.xf.forEach(cxf => {
+            cellxf = {};
+            cellxf.numFmt = numFmt[cxf["@attributes"]["numFmtId"]];
+            cellxfs.push(cellxf);
+        })
+    } else {
+
+    }
+
     styles.CellXf = cellxfs;
     return styles;
 }
@@ -385,10 +397,14 @@ function parseStyleCSS(xlStyle) {
     let fontsCSS = [];
 
     function readFont(fnt) {
-        fontcss = '';
-        fontcss += 'font-family: ' + fnt.name["@attributes"]["val"] + ';';
-        fontcss += 'font-size: ' + Number(fnt.sz["@attributes"]["val"]) + 'pt;';
-
+        //console.log(fnt);
+        let fontcss = '';
+        if (("name" in fnt)) {
+            fontcss += 'font-family: ' + fnt.name["@attributes"]["val"] + ';';
+        }
+        if (("sz" in fnt)) {
+            fontcss += 'font-size: ' + Number(fnt.sz["@attributes"]["val"]) + 'pt;';
+        }
         //color: #FFFF0000;
         //ARGB 
         if ("color" in fnt) {
@@ -434,27 +450,29 @@ function parseStyleCSS(xlStyle) {
 
     //Fill CSS
     let fillsCSS = [];
-    xlStyle.styleSheet.fills.fill.forEach(fl => {
-        fillcss = '';
+    if (Array.isArray(xlStyle.styleSheet.cellXfs.xf)) {
+        xlStyle.styleSheet.fills.fill.forEach(fl => {
+            fillcss = '';
 
-        if ("patternFill" in fl) {
-            if ("fgColor" in fl.patternFill) {
-                if ("rgb" in fl.patternFill.fgColor["@attributes"]) {
-                    fillcss += 'background-color: #' + fl.patternFill.fgColor["@attributes"]["rgb"].slice(2, 8) + ';';
+            if ("patternFill" in fl) {
+                if ("fgColor" in fl.patternFill) {
+                    if ("rgb" in fl.patternFill.fgColor["@attributes"]) {
+                        fillcss += 'background-color: #' + fl.patternFill.fgColor["@attributes"]["rgb"].slice(2, 8) + ' !important;';
 
+                    }
+                    if ("indexed" in fl.patternFill.fgColor["@attributes"]) {
+                        fillcss += 'background-color: #' + indexed[fl.patternFill.fgColor["@attributes"]["indexed"]].slice(2, 8) + ' !important;';
+                    }
+                    if ("theme" in fl.patternFill.fgColor["@attributes"]) {
+                        fillcss += 'background-color: #' + indexedToRGB(themecolor[fl.patternFill.fgColor["@attributes"]["theme"]], fl.patternFill.fgColor["@attributes"]["tint"]) + ' !important;';
+                    }
                 }
-                if ("indexed" in fl.patternFill.fgColor["@attributes"]) {
-                    fillcss += 'background-color: #' + indexed[fl.patternFill.fgColor["@attributes"]["indexed"]].slice(2, 8) + ';';
-                }
-                if ("theme" in fl.patternFill.fgColor["@attributes"]) {
-                    fillcss += 'background-color: #' + indexedToRGB(themecolor[fl.patternFill.fgColor["@attributes"]["theme"]], fl.patternFill.fgColor["@attributes"]["tint"]) + ';';
-                }
-            }
-        };
+            };
 
 
-        fillsCSS.push(fillcss);
-    })
+            fillsCSS.push(fillcss);
+        })
+    }
     //    console.log(fillsCSS);
 
     //Border CSS
@@ -477,7 +495,7 @@ function parseStyleCSS(xlStyle) {
                     }
 
                     if (["@attributes"] in brd[ps] && "style" in brd[ps]["@attributes"]) {
-                        bordercss += 'border-' + ps + ': solid ' + brd[ps]["@attributes"]["style"] + clr + ';'
+                        bordercss += 'border-' + ps + ': solid ' + brd[ps]["@attributes"]["style"] + clr + ' !important;'
                     }
 
                 }
@@ -492,22 +510,45 @@ function parseStyleCSS(xlStyle) {
 
     //cellXfs CSS
     //let classCSS = [];
+
+    //Было
+    // classCSS = '<style>';
+    // classCSS += 'table{border-collapse: collapse;table-layout: fixed;font-family: Calibri;font-size: 11pt;}';
+    // classCSS += 'td{padding-top:2px;padding-right:2px;padding-left:5px;vertical-align: bottom;word-break: break-all;white-space: nowrap;}' //white-space: nowrap;
+    // classCSS += 'td.Number {text-align: end;}';
+    // classCSS += 'tr{height: 20px;}';
+    // classCSS += 'tr:hover{background-color: #e6e6e6;}';
+    // classCSS += '.inlineStr {white-space: nowrap;overflow: hidden;text-overflow: ellipsis;}'; //background-color: red;
+    // classCSS += '.inlineStr:hover {white-space: normal;z-index: 1}';
+    //Было
+
+    //Стало
     classCSS = '<style>';
+    classCSS += '.sheetjs{border-spacing: initial;table-layout: fixed;font-family: Calibri;font-size: 11pt;}';//border-spacing: 0.1px;border-collapse: collapse;
+    classCSS += '.sheetjs td{border: 0.1px solid #f0f0f0;padding-top:1px;padding-right:1px;padding-left:1px;vertical-align: bottom; user-select: none;}'//  white-space: nowrap;}'   //word-break: break-all; border: 1px solid #ccc; //border-top: 1px solid #ccc;border-right: 1px solid #ccc;border-left: 1px solid #ccc;border-bottom: 1px solid #ccc;
+    classCSS += '.sheetjs td.Number {text-align: end;word-break: unset;}';
+    classCSS += '.sheetjs tr{height: 20px;}';
+    classCSS += '.sheetjs tr:hover{background-color: #e6e6e6;}';
+    classCSS += '.sheetjs .inlineStr {white-space: nowrap;overflow: hidden;text-overflow: ellipsis;}'; //background-color: red;
+    classCSS += '.sheetjs .inlineStr:hover {white-space: normal;z-index: 1}';
+    classCSS += '.btn {cursor: col-resize;/*background-color: red;*/user-select: none;position: absolute;}';
+    classCSS += '.btn-right { right: 0; }';
 
-    //classCSS.push('table{border-collapse: collapse;table-layout: fixed;}');
-    // table-layout: fixed;       border: 1px solid #e6e6e6;
-    //htstyle.push('td{border: 1px solid #e6e6e6;}');    
-    classCSS += 'table{border-collapse: collapse;table-layout: fixed;}';
+    classCSS += '.sheetjs thead > tr > th {text-align: center; border-top: 1px solid #ccc;border-left: 1px solid #ccc;border-right: 1px solid #ccc;' +
+        'border-bottom: 1px solid #ccc;background-color: #f3f3f3;cursor: pointer;box-sizing: border-box;' +
+        'overflow: hidden; position: -webkit-sticky; position: sticky;top: 0;z-index: 2;}';//padding: 2px;
 
-    //classCSS.push('td{padding-top:1px;padding-right:1px;padding-left:1px;vertical-align: bottom;white-space: nowrap;}');
-    classCSS += 'td{padding-top:2px;padding-right:2px;padding-left:5px;vertical-align: bottom;white-space: nowrap;}'
+    classCSS += ".sheetjs thead > tr > th:hover {background-color: #a4ce88;}";
 
-    //classCSS.push('td.Number {text-align: end;}');
-    classCSS += 'td.Number {text-align: end;}';
-    //    console.log(xlStyle);
-    classCSS+='.inlineStr {white-space: nowrap;overflow: hidden;text-overflow: ellipsis;}'; //background-color: red;
-    classCSS+='.inlineStr:hover {white-space: normal;z-index: 1}';
+    classCSS += '.sheetjs .row_selectall { text-align: center; border-top: 1px solid #ccc;border-left: 1px solid #ccc;border-right: 1px solid #ccc;' +
+        'border-bottom: 1px solid #ccc;background-color: #f3f3f3;cursor: pointer;box-sizing: border-box;' +
+        'overflow: hidden; position: -webkit-sticky; position: sticky;top: 0;z-index: 2;word-break: unset;}';//padding: 2px;
 
+    classCSS += ".sheetjs .row_selectall:hover {background-color: #a4ce88;}";
+
+    //Стало
+
+    if (Array.isArray(xlStyle.styleSheet.cellXfs.xf)) {
     xlStyle.styleSheet.cellXfs.xf.forEach(function (item, ind) {
         strstyle = '.cstyle' + ind + ' {';
         strstyle += fontsCSS[item["@attributes"]["fontId"]];
@@ -516,48 +557,69 @@ function parseStyleCSS(xlStyle) {
 
         if ('alignment' in item && 'horizontal' in item.alignment["@attributes"]) { strstyle += ' text-align:' + item.alignment["@attributes"].horizontal + ' !important;' }
         if ('alignment' in item && 'vertical' in item.alignment["@attributes"]) {
-            if (item.alignment["@attributes"].vertical == 'center') { strstyle += ' vertical-align: middle;' }
-            else { strstyle += ' vertical-align:' + item.alignment["@attributes"].vertical + ';' }
+            if (item.alignment["@attributes"].vertical == 'center') { strstyle += ' vertical-align: middle !important;' }
+            else { strstyle += ' vertical-align:' + item.alignment["@attributes"].vertical + ' !important;' }
         }
+
         if ('alignment' in item && 'wrapText' in item.alignment["@attributes"]) { strstyle += ' white-space: normal;' }
+        else { strstyle += ' white-space: pre;' }
 
         strstyle += '}';
         //classCSS.push(strstyle);
         classCSS += strstyle;
     })
-
+    }
     //console.log(classCSS);
     classCSS += '</style>';
     return classCSS;
 }
 
+let maxcellnumber = 0;
 function parseSheet(XLsheet, sst, styles) {
+    maxcellnumber = 0;
     let xlsheet = XLsheet;
     let rows = [];
     let mcolumn = {};
 
     function readCell(column) {
+        //console.log(column);
         switch (column["@attributes"]["t"]) {
             case "s":
                 //строка общая в отдельном массиве
                 //console.log(sst[column.v["#text"]]);
                 mcolumn = {
-                    "id": column["@attributes"]["r"],
-                    "v": sst[column.v["#text"]]["t"]["#text"]
+                    "id": column["@attributes"]["r"]
                 };
+                //console.log(sst[column.v["#text"]]);
+                if ("r" in sst[column.v["#text"]]) {
+                    let txt = '';
+                    sst[column.v["#text"]]["r"].forEach(r => {
+                        let stylePr = '';
+                        if ("rPr" in r) {
+                            stylePr = ` style="${readrPr(r.rPr)}"`;
+                        }
+                        txt += `<span ${stylePr}>${r["t"]["#text"]}</span>`;
+                    })
+                    mcolumn.v = txt;
+                } else {
+                    mcolumn.v = sst[column.v["#text"]]["t"]["#text"];
+                    if ("@attributes" in sst[column.v["#text"]]["t"] && "xml:space" in sst[column.v["#text"]]["t"]["@attributes"]) {
+                        mcolumn.whitespace = 'pre';
+                    }
+                }
+
+
                 if ("s" in column["@attributes"]) {
                     mcolumn.style = column["@attributes"]["s"]//styles.CellXf[column["@attributes"]["s"]]
                 }
-                if ("@attributes" in sst[column.v["#text"]]["t"] && "xml:space" in sst[column.v["#text"]]["t"]["@attributes"]) {
-                    mcolumn.whitespace = 'pre';
-                }
+
                 break;
             case "inlineStr":
                 //строка непосредственно в ячейке
                 mcolumn = {
                     "id": column["@attributes"]["r"],
                     "v": column.is.t["#text"],
-                    "inlineStr":1  //возможен длинный текст 
+                    "inlineStr": 1  //возможен длинный текст 
                 };
                 if ("s" in column["@attributes"]) {
                     mcolumn.style = column["@attributes"]["s"]//styles.CellXf[column["@attributes"]["s"]]
@@ -599,6 +661,7 @@ function parseSheet(XLsheet, sst, styles) {
         c.push(mcolumn);
     }
 
+    //читать ряд
     function readRow(element) {
         row = {};
         c = [];
@@ -621,9 +684,55 @@ function parseSheet(XLsheet, sst, styles) {
                 readCell(celm);
             }
         }
+
+        //console.log( c[c.length-1]);
+        if (c.length > 0 && idc(c[c.length - 1].id) > maxcellnumber) { maxcellnumber = idc(c[c.length - 1].id) };
+
+
         row.columns = c;
         rows.push(row);
     }
+
+    function readrPr(rPr) {
+        fontcss = '';
+        if (("rFont" in rPr)) {
+            fontcss += 'font-family: ' + rPr.rFont["@attributes"]["val"] + ';';
+        }
+        if (("sz" in rPr)) {
+            fontcss += 'font-size: ' + Number(rPr.sz["@attributes"]["val"]) + 'pt;';
+        }
+        //color: #FFFF0000;
+        //ARGB 
+        if ("color" in rPr) {
+            if ("theme" in rPr.color["@attributes"]) {
+                if (themecolor[rPr.color["@attributes"]["theme"]]) {
+                    fontcss += 'color: #' + themecolor[rPr.color["@attributes"]["theme"]] + ';';
+                }
+            }
+            if ("indexed" in rPr.color["@attributes"]) {
+                if (indexed[rPr.color["@attributes"]["indexed"]]) {
+                    fontcss += 'color: #' + indexed[rPr.color["@attributes"]["indexed"]].slice(2, 8) + ';';
+                }
+            }
+            if ("rgb" in rPr.color["@attributes"]) {
+                fontcss += 'color: #' + rPr.color["@attributes"]["rgb"].slice(2, 8) + ';';
+            }
+        };
+        //font-weight
+        if ("b" in rPr) {
+            fontcss += 'font-weight: bold;'
+        };
+        //font-style
+        if ("i" in rPr) {
+            fontcss += 'font-style: italic;'
+        };
+        //text-decoration
+        if ("u" in rPr) {
+            fontcss += 'text-decoration: underline;'
+        };
+        return fontcss;
+    }
+
     if (Array.isArray(xlsheet.row)) {
         xlsheet.row.forEach(elm => {
             readRow(elm);
@@ -635,29 +744,37 @@ function parseSheet(XLsheet, sst, styles) {
     return rows;
 }
 
+//описание <cols></cols>
 function parseCols(Cols, maxcell) {
-    //console.log(Cols);
+    //console.log(maxcell);
     let xlcols = {};
     let cols = [];
-    //let width = 0;
 
+    let wd = 8.43;// ширина колонки по умолчанию
+    //console.log(wd);
     if (Array.isArray(Cols.col)) {
         Cols.col.forEach(cl => {
-            let i = 0;
-            //console.log(cl);
-            for (i = Number(cl["@attributes"]["min"]); i <= Number(cl["@attributes"]["max"]); i++) {
-                //console.log(i);
+            //если не описаны колонки до "min"
+            min = parseInt(cl["@attributes"]["min"]); max = parseInt(cl["@attributes"]["max"]);
+
+            for (let index = min; (cols.length < maxcell && index <= max); index++) {
                 col = {};
                 col.width = cl["@attributes"]["width"];
                 //    width = col.width;
-                cols[i - 1] = col;
-                if (i > maxcell) { break };
+                cols[index - 1] = col;
             }
         })
     }
     else {
         //авто ширина колонок?
-        for (let i = Number(Cols.col["@attributes"]["min"]); i <= Number(Cols.col["@attributes"]["max"]); i++) {
+        //если не описаны колонки до "min"
+        for (let i = 1; i < Number(Cols.col["@attributes"]["min"]); i++) {
+            let col = {};
+            col.width = wd;
+            //    width = col.width;
+            cols[i - 1] = col;
+        }
+        for (let i = Number(Cols.col["@attributes"]["min"]); cols.length < maxcell && i <= Number(Cols.col["@attributes"]["max"]); i++) {
             col = {};
             col.width = Cols.col["@attributes"]["width"];
             //    width = col.width;
@@ -668,7 +785,6 @@ function parseCols(Cols, maxcell) {
     //xlcols.width = width;
     return xlcols;
 }
-
 
 function parseWB(xlWB) {
 
@@ -708,6 +824,7 @@ function parseWB(xlWB) {
 
 };
 
+//описание объединенных ячеек
 let mcells = [];
 function parseMerge(mC) {
     mcells = [];
@@ -785,7 +902,40 @@ function parseMerge(mC) {
     return mcells;
 }
 
-function toHTMLstr(json, ncols) {
+let rels = [];
+function parseRels(relsjson) {
+    rels = [];
+    if (Array.isArray(relsjson.Relationships.Relationship)) {
+        relsjson.Relationships.Relationship.forEach(rs => {
+            if (rs['@attributes']['TargetMode'] == 'External') {
+                let rel = {
+                    "id": rs['@attributes']['Id'],
+                    "target": rs['@attributes']['Target']
+                };
+                rels.push(rel)
+            }
+        })
+    }
+}
+
+//Гиперссылки
+function parseHL(hlink) {
+    let hcells = [];
+    if (hlink && Array.isArray(hlink.hyperlink)) {
+        hlink.hyperlink.forEach(hl => {
+
+            rl = rels.find(el => el.id === hl["@attributes"]["r:id"]);
+            cell = {
+                "id": hl["@attributes"]["ref"],
+                "hiperlink": rl.target
+            }
+            hcells.push(cell);
+        })
+    }
+    return hcells;
+}
+
+function toHTML(json, ncols) {
 
     //объединенные столбцы
     let merges = mcells;
@@ -805,50 +955,87 @@ function toHTMLstr(json, ncols) {
     let widthrow = 0;
     let maxwidth = 0;
 
-    //let xltable = document.createElement('table');
-    // xltable.setAttribute('border',  '0');
-    // xltable.setAttribute('cellpadding',  '0');
-    // xltable.setAttribute('cellspacing',  '0');
 
-    //let xlTable = [];
     let xlTable = '';
-    // xlTable.push('<table>');
 
-    //let htcolgroup = document.createElement('colgroup');
-    //xlTable.push('<colgroup>');
-    xlTable += '<colgroup>';
-
+    //колонки листа Excel
+    xlTable += `<colgroup><col width=30></col>`;
+    icol = 0;
+    //console.log(cols);
     cols.forEach(col => {
-        //xlTable.push(`<col width="${Math.round(col.width * kf)}"></col>`);
-        xlTable += `<col width="${Math.round(col.width * kf)}"></col>`;
+        xlTable += `<col data-td="td_${icol}" width="${Math.round(col.width * kf)}"></col>`;
+        widthrow += Math.round(col.width * kf);
+        icol++;
     });
-    //xlTable.push('</colgroup>');
+
+    //не все <col></col> были объявлены в excel
+    if (icol < maxcellnumber) {
+        //console.log(rownum+' '+(maxcellnumber-c));
+        while (icol < maxcellnumber) {
+            xlTable += `<col data-td="td_${icol}" width="${wd}"></col>`;
+            widthrow += wd;
+            icol++;
+        }
+    }
+
+
     xlTable += '</colgroup>';
 
-    //xlTable.push('<tbody>');
+
+    //строка с индексами колонок колонок A B C D ...AA AB..
+    xlHead = '<thead class="resizable"><tr>';
+    xlHead += '<th class="jexcel_selectall"></th>';
+    //только двухзначные колонки
+    i = 0;
+    i1 = 0;
+    s1 = '';
+    for (var j = 0; j <= maxcellnumber - 1; j++) {
+        if (i > 25) {
+            //изменить 1 символ
+            i = 0; i1++;
+            s1 = String.fromCharCode(64 + i1);
+        }
+        xlHead += `<th data-td="td_${i}">${s1}` + `${String.fromCharCode(65 + i)}<span class="btn btn-right">&nbsp;</span></th>`;//>
+        i++;
+    };
+    xlHead += '</tr></thead>';
+    xlTable += xlHead;
+    //колонки листа Excel
+
     xlTable += '<tbody>';
+    rownum = 1;
+    let delcol = []; //number of deleted columns in [x] row
+
+
 
     xldata.forEach(row => {
-        c = 0;
+        let c = 0;
         widthrow = 0;
+
         while ((row.r - r) > 1) {
-            //Add default row
-            //xlTable.push(`<tr height="${ht}"></tr>`);
-            xlTable += `<tr height="${ht}"></tr>`;
+            //Пустой ряд если был пропущен 
+            xlTable += `<tr height="${ht}">`;
+            //дополнительная колонка с номерами строк
+            xlTable += `<td class="row_selectall">${rownum}</td>`;
+            //пустые ячейки пустой строки
+            for (i = 0; i < maxcellnumber; i++) {
+                xlTable += `<td id="${String.fromCharCode(65 + i)}${rownum}" data-td="td_${i}" data-tr="tr_${rownum}"></td>`;
+            }
+            xlTable += `</tr>`;
+            rownum++;
             r++;
         }
 
         r = row.r;
         if (row.ht) {
-            //xlTable.push(`<tr height="${Math.round(row.ht * kfh)}">`);
             xlTable += `<tr height="${Math.round(row.ht * kfh)}">`;
         } else {
-            //xlTable.push(`<tr height="${ht}">`);
             xlTable += `<tr height="${ht}">`;
         }
+        //дополнительная колонка с номерами строк
+        xlTable += `<td class="row_selectall">${rownum}</td>`;
 
         row.columns.forEach(col => {
-
             ic = idc(col.id);
             while ((ic - c) > 1) {
                 //пропущенные ячейки для HTML добавить
@@ -868,32 +1055,28 @@ function toHTMLstr(json, ncols) {
                     if (cellid.colspan) { tdattr += ` colspan="${cellid.colspan}"` };
                     if (cellid.rowspan) { tdattr += ` rowspan="${cellid.rowspan}"` };
 
-                    //xlTable.push(`<td ${tdattr} ></td>`);
                     xlTable += `<td ${tdattr} ></td>`;
                 }
                 c++;
             }
 
-            cellid = findMerged(String.fromCharCode(c + 65) + r);
+            cellid = findMerged(String.fromCharCode(c + 65) + r);//пока обрабатываются только односимвольные колоки
             //console.log(cols[c]);
             if (cellid.enabled) {
                 tdattr = '';
                 classattr = '';
-
-                // if ("whitespace" in col && cols[c]) {
-                //     clstyle += `max-width: ${Math.round(cols[c].width * kf)}px; white-space: pre;`
-                // }
+                clstyle = '';
 
                 if (col.style) {
-                    //htcell.classList.add("cstyle" + col.style);
                     classattr += `cstyle${col.style}`;
                 }
                 if (col.type) { classattr += ` ${col.type}` };
 
-                tdattr += ` id="${String.fromCharCode(c + 65) + r}"`
+                tdattr += ` id="${String.fromCharCode(c + 65) + r}" data-td="td_${c}" data-tr="tr_${r}"`
 
                 if (cellid.colspan) {
                     tdattr += ` colspan="${cellid.colspan}"`
+                    //c = c + cellid.colspan - 1;    //увеличить номер занятой колонки
                 } else {
                     if (cols[c]) {
                         tdattr += ` width="${Math.round(cols[c].width * kf)}"`;
@@ -907,28 +1090,49 @@ function toHTMLstr(json, ncols) {
                 };
                 if (cellid.rowspan) { tdattr += ` rowspan="${cellid.rowspan}"` };
 
-                //xlTable.push(`<td class="${classattr}" ${tdattr} >${col.v}</td>`);
+                hcl = hiperlinks.find(el => el.id === String.fromCharCode(c + 65) + r);
+                //console.log(hcl);
+
+                //значение в ячейке
                 if (col.v) {
-                    if (col.inlineStr){
-                        xlTable += `<td class="${classattr}" ${tdattr} ><div class="inlineStr">${col.v}</div></td>`;
-                    }else{
-                     xlTable += `<td class="${classattr}" ${tdattr} >${col.v}</td>`;
+                    if (hcl) {
+                        //hiperlink   
+                        if (col.inlineStr) {
+                            xlTable += `<td class="${classattr}" ${tdattr} ${clstyle} ><div class="inlineStr"><a href="${hcl.hiperlink}" target="_blank">${col.v}</a></div></td>`;
+                        } else {
+                            xlTable += `<td class="${classattr}" ${tdattr} ${clstyle} ><a href="${hcl.hiperlink}" target="_blank">${col.v}</a></td>`;
+                        }
+                    } else {
+                        if (col.inlineStr) {
+                            xlTable += `<td class="${classattr}" ${tdattr} ${clstyle} ><div class="inlineStr">${col.v}</div></td>`;
+                        } else {
+                            xlTable += `<td class="${classattr}" ${tdattr} ${clstyle} >${col.v}</td>`;
+                        }
                     }
                 } else {
-                    xlTable += `<td class="${classattr}" ${tdattr} ></td>`;
+                    xlTable += `<td class="${classattr}" ${tdattr} ${clstyle} ></td>`;
                 }
             }
+
             c++;
         })
-        //xlTable.push('</tr>');
+
+        //дозаполнить строку ячейками для красивого отображения
+
+        if (c < maxcellnumber) {
+            //console.log(rownum + ' ' + (maxcellnumber - c));
+            for (i = c; i < (maxcellnumber); i++) {
+                xlTable += `<td id="${String.fromCharCode(65 + i)}${rownum}" data-td="td_${i}" data-tr="tr_${rownum}"></td>`;
+            }
+        }
+
         xlTable += '</tr>';
+        rownum++;
         maxwidth = (maxwidth < widthrow) ? widthrow : maxwidth;
     });
 
-    // xlTable[0]=(`<table width="${maxwidth}">`);
-    // xlTable.push('</table>');
     //Start
-    xlTable = `<table width="${maxwidth}">` + xlTable;
+    xlTable = `<table id="sheetjs" class="sheetjs" width="${maxwidth}">` + xlTable;
     //END    
     xlTable += '</table>';
     return xlTable;
@@ -954,20 +1158,43 @@ function make_xlsx_lib(MXLSX) {
                 //Styles
                 let xmlfile = await zip.file("xl/styles.xml").async("string");
                 let XmlNode = new DOMParser().parseFromString(xmlfile, 'text/xml');
+                let stylesjson = xmlToJson(XmlNode);
 
                 //numFmt for Cells
-                cellXfs = parseStyle(xmlToJson(XmlNode));
-                files.StyleCSS = parseStyleCSS(xmlToJson(XmlNode));
+                cellXfs = parseStyle(stylesjson);
+                files.StyleCSS = parseStyleCSS(stylesjson);
 
                 //sharedStrings
-                filename = await zip.file("xl/sharedStrings.xml");
+                let filename = await zip.file("xl/sharedStrings.xml");
                 if (filename) {
                     xmlfile = await zip.file("xl/sharedStrings.xml").async("string");
                     XmlNode = new DOMParser().parseFromString(xmlfile, 'text/xml');
+                    //console.log(xmlToJson(XmlNode));
                     sharedStrings = xmlToJson(XmlNode).sst.si;// код...
+                    if (!Array.isArray(sharedStrings)) {
+                        sharedStrings[0]=xmlToJson(XmlNode).sst.si;
+                    }
                 } else {
                     sharedStrings = []
                 }
+                //console.log(sharedStrings);
+
+                //Relationship only Sheet1
+                filename = await zip.file("xl/worksheets/_rels/sheet1.xml.rels");
+                if (filename) {
+                    xmlfile = await zip.file("xl/worksheets/_rels/sheet1.xml.rels").async("string");
+                    XmlNode = new DOMParser().parseFromString(xmlfile, 'text/xml');
+                    let relsjson = xmlToJson(XmlNode);
+                    //console.log(relsjson);
+                    parseRels(relsjson);
+                }
+                // else {
+                //     Relationship = []
+                // }
+                //console.log(rels);
+
+
+                //console.log(sharedStrings);
 
                 //???
                 // xmlfile = await zip.file("xl/workbook.xml").async("string");
@@ -982,16 +1209,16 @@ function make_xlsx_lib(MXLSX) {
                 files.Sheets = { "sheet1": nsheet };
 
                 //??? так надо, 
-                let maxcell = 30;
-
-                if ('dimension' in sheet.worksheet) {
-                    dimensions = sheet.worksheet.dimension['@attributes']['ref'].split(':');
-                    maxcell = idc(dimensions);
-                }
+                //let maxcell = maxcellnumber;
+                //console.log(maxcellnumber);
+                // if ('dimension' in sheet.worksheet) {
+                //     dimensions = sheet.worksheet.dimension['@attributes']['ref'].split(':');
+                //     maxcellnumber = idc(dimensions);
+                // }
 
                 if ("cols" in sheet.worksheet) {
                     cols = sheet.worksheet.cols;
-                    ncols = parseCols(cols, maxcell);
+                    ncols = parseCols(cols, maxcellnumber);
                     //files.Cols = ncols;
                 } else {
                     ncols = { "cols": [] };
@@ -1002,8 +1229,13 @@ function make_xlsx_lib(MXLSX) {
                 nmerge = parseMerge(mergecells);
                 //files.MergeCells = nmerge;
 
+                relscells = sheet.worksheet.hyperlinks;
+
+                hiperlinks = parseHL(relscells);
+                // console.log(hiperlinks);
+
                 //files.HTML = toHTML(nsheet, ncols);
-                files.HTMLstr = toHTMLstr(nsheet, ncols);
+                files.HTML = toHTML(nsheet, ncols);
 
                 //console.log(files);
                 resolve(files);
