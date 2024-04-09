@@ -5,15 +5,95 @@
 
     <meta charset="utf-8" />
 
-     <!--  <script src="js/jszip.min.js"> </script> -->
-    <script src="js/myXLSX.all.js"></script>
-   <!-- <script src="js/ssf.js"></script> -->
+    <script src="js/jszip.js"> </script>
+    <script src="js/ssf.js"></script>
 
-    <style>
-        .clicked {
-            cursor: pointer;
-        }
-    </style>
+    <script src="js/myXLSX.js"></script>
+    <script src="js/sheetxl.js"></script>
+
+    <!-- <script src="js/myxlsx/myXLSX.min.js"></script> -->
+
+<style>
+    .str {
+        min-width: 30px;
+    }
+
+    .clicked {
+        cursor: pointer;
+    }
+
+    /* Hover */
+
+    /* .sheetjs td:hover { */
+    /* content: ''; */
+    /* position: absolute; */
+    /* top: 0px;
+    right: 0px; 
+    bottom: 0px;    
+    left: 0px; */
+    /* border: 2px solid #375623; */
+    /* border-right: 2px solid #375623;
+    border-bottom: 2px solid #375623;
+    border-left: 2px solid #375623; */
+    /* } */
+
+    /* Click */
+    .sheetjs td.active {
+        /* content: ''; */
+        /* position: absolute; */
+        /* top: 0px;
+    right: 0px; 
+    bottom: 0px;    
+    left: 0px; */
+        border: 2px solid #375623 !important;
+    }
+
+    .xlrange {
+        position: absolute;
+        background-color: rgba(61, 94, 51, 0.33);
+        /*  Цвет фона */
+        outline: 2px solid #375623;
+        /* Чёрная рамка */
+        height: 0px;
+        width: 0px;
+        top: -2000px;
+        left: -2000px;
+    }
+
+    .xlcorner {
+        position: absolute;
+        background-color: #375623;
+        height: 1px;
+        width: 1px;
+        border: 1px solid rgb(255, 255, 255);
+        top: -2000px;
+        left: -2000px;
+        cursor: crosshair;
+        box-sizing: initial;
+        z-index: 20;
+        padding: 2px;
+    }
+
+    #pageCanvas,
+    .index-page__logo-com.fixed {
+        pointer-events: none;
+    }
+
+    #pageCanvas {
+        position: fixed;
+        display: block;
+        bottom: 0;
+        left: 0;
+        height: 100%;
+        right: 0;
+        top: 0;
+        width: 100%;
+        z-index: 100000;
+    }
+</style>
+
+
+
 </head>
 
 <body>
@@ -31,20 +111,19 @@
     <br>
     <br>
 
-    <strong>File</strong> 
+    <strong>File</strong>
     <span id="mylink" class="clicked">formula.xlsx</span>,
     <span id="mylink2" class="clicked">theme.xlsx</span>,
     <span id="mylink3" class="clicked">indexed.xlsx</span>
-    
 
 
 
-    <div id="xltable">
-    </div>
+
+    <div id="xltable"></div>
+    <div id="xlcorner" class="xlcorner"></div>
+    <div id="xlrange" class="xlrange"></div>
 
     <script>
-
-
         //загрузка файла по кнопке
         function handleFile(e) {
             let files = e.target.files;
@@ -57,8 +136,8 @@
                 }
 
                 //htdiv.insertAdjacentHTML(`<style></style>`);
-                //let tblHTML=value.StyleCSS+value.HTMLstr.join('');
-                let tblHTML = value.StyleCSS + value.HTMLstr;
+                //let tblHTML=value.StyleCSS+value.HTML.join('');
+                let tblHTML = value.StyleCSS + value.HTML;
                 // htdiv.appendChild(value.HTML);
                 htdiv.insertAdjacentHTML("afterBegin", tblHTML);
 
@@ -68,9 +147,9 @@
         }
 
         function linkFile(e) {
-            
+
             let uri = e.target.innerText;
-            
+
             var oReq = new XMLHttpRequest();
             oReq.open("GET", uri, true);
             oReq.responseType = "arraybuffer";
@@ -87,7 +166,7 @@
                         while (htdiv.firstChild) {
                             htdiv.removeChild(htdiv.firstChild);
                         }
-                        let tblHTML = value.StyleCSS + value.HTMLstr;
+                        let tblHTML = value.StyleCSS + value.HTML;
                         htdiv.insertAdjacentHTML("afterBegin", tblHTML);
                     }
                     );
@@ -107,11 +186,268 @@
 
         let _mylink2 = document.getElementById('mylink2');
         _mylink2.addEventListener('click', linkFile, false);
-        
+
         let _mylink3 = document.getElementById('mylink3');
         _mylink3.addEventListener('click', linkFile, false);
 
     </script>
+    <!-- <script src="js/sheetxl.js"></script> -->
+    
+    <!-- <script>
+        const html = document.querySelector('html')
+        function isTouchDevice() {
+            return 'ontouchstart' in window || navigator.maxTouchPoints > 0 || navigator.msMaxTouchPoints > 0;
+        }
+
+        localStorage.removeItem('centrsvet_is_dark');
+        localStorage.removeItem('centrsvet_is_dark_2');
+        const THEME_KEY = 'centrsvet_is_dark_1';
+
+        function invert_html() {
+            html.classList.toggle('inverted');
+            const isDark = html.classList.contains('inverted');
+            localStorage.setItem(THEME_KEY, JSON.stringify(isDark));
+            changeBrowserTheme(isDark ? '#000' : '#fff');
+
+            const hideCanvCursor = JSON.parse(localStorage.getItem('hideCanvCursor'));
+
+            if (!isTouchDevice() && !hideCanvCursor) {
+                if (!hideCanvCursor) {
+                    const canvas = document.getElementById('pageCanvas');
+                    if (canvas) {
+                        canvas.remove();
+                        initCanvas();
+                    }
+
+                }
+            }
+            if (window.navigator && window.navigator.vibrate) {
+                window.navigator.vibrate(20)
+            }
+        }
+
+
+        const isDark = JSON.parse(localStorage.getItem(THEME_KEY));
+
+        window.invert_html = invert_html;
+
+
+
+        function changeBrowserTheme(color) {
+            document.querySelector("meta[name='theme-color']").setAttribute("content", color);
+        }
+
+
+
+        if (!isDark) {
+            invert_html();
+        }
+
+
+
+        //-----
+        //if (window.location.href.includes('exterior_ceiling') && !isDark) {
+        //   invert_html();
+        //}
+    </script>
+    
+    <script type="module">
+        import {
+            Polyline,
+            Renderer,
+            Transform,
+            Geometry,
+            Program,
+            Mesh,
+            Vec3,
+            Vec2,
+            Color,
+        } from './js/ogl-master/src/index.js';//'https://cdn.jsdelivr.net/npm/ogl@0.0.32/dist/ogl.mjs';
+
+        // function isTouchDevice() {
+        // return 'ontouchstart' in window || navigator.maxTouchPoints > 0 || navigator.msMaxTouchPoints > 0;
+        // }
+
+        const hideCanvCursor = JSON.parse(localStorage.getItem('hideCanvCursor'));
+        if (!isTouchDevice() && !hideCanvCursor) {
+            if (!hideCanvCursor) {
+                initCanvas();
+            }
+        }
+
+        function initCanvas() {
+            const vertex = `
+                    attribute vec3 position;
+                    attribute vec3 next;
+                    attribute vec3 prev;
+                    attribute vec2 uv;
+                    attribute float side;
+
+                    uniform vec2 uResolution;
+                    uniform float uDPR;
+                    uniform float uThickness;
+
+                    vec4 getPosition() {
+                        vec2 aspect = vec2(uResolution.x / uResolution.y, 1);
+                        vec2 nextScreen = next.xy * aspect;
+                        vec2 prevScreen = prev.xy * aspect;
+
+                        vec2 tangent = normalize(nextScreen - prevScreen);
+                        vec2 normal = vec2(-tangent.y, tangent.x);
+                        normal /= aspect;
+                        normal *= 1.0 - pow(abs(uv.y - 0.5) * 1.9, 2.0);
+
+                        float pixelWidth = 1.0 / (uResolution.y / uDPR);
+                        normal *= pixelWidth * uThickness;
+
+                        // When the points are on top of each other, shrink the line to avoid artifacts.
+                        float dist = length(nextScreen - prevScreen);
+                        normal *= smoothstep(0.0, 0.02, dist);
+
+                        vec4 current = vec4(position, 1);
+                        current.xy -= normal * side;
+                        return current;
+                    }
+
+                    void main() {
+                        gl_Position = getPosition();
+                    }
+                `;
+
+            {
+                const renderer = new Renderer({ dpr: 2, alpha: true });
+                const gl = renderer.gl;
+                const canvas = document.body.appendChild(gl.canvas);
+                canvas.id = 'pageCanvas';
+                gl.clearColor(0, 0, 0, 0);
+
+                const scene = new Transform();
+
+                const lines = [];
+
+                function resize() {
+                    renderer.setSize(window.innerWidth, window.innerHeight);
+
+                    // We call resize on the polylines to update their resolution uniforms
+                    lines.forEach((line) => line.polyline.resize());
+                }
+                window.addEventListener('resize', resize, false);
+
+                // If you're interested in learning about drawing lines with geometry,
+                // go through this detailed article by Matt DesLauriers
+                // https://mattdesl.svbtle.com/drawing-lines-is-hard
+                // It's an excellent breakdown of the approaches and their pitfalls.
+
+                // In this example, we're making screen-space polylines. Basically it
+                // involves creating a geometry of vertices along a path - with two vertices
+                // at each point. Then in the vertex shader, we push each pair apart to
+                // give the line some width.
+
+                // Just a helper function to make the code neater
+                function random(a, b) {
+                    const alpha = Math.random();
+                    return a * (1.0 - alpha) + b * alpha;
+                }
+
+                // We're going to make a number of different coloured lines for fun.
+                // #BE9638
+                const lineColor = html.classList.contains('inverted') ? '#fff' : '#000';
+
+                [lineColor].forEach((color, i) => {
+                    // Store a few values for each lines' randomised spring movement
+                    // const line = {
+                    //   spring: random(0.02, 0.1),
+                    //   friction: random(0.7, 0.95),
+                    //   mouseVelocity: new Vec3(),
+                    //   mouseOffset: new Vec3(random(-1, 1) * 0.02)
+                    // };
+
+                    const line = {
+                        spring: 3,
+                        friction: 0.1,
+                        mouseVelocity: new Vec3(),
+                        mouseOffset: new Vec3(0.01),
+                    };
+
+                    // Create an array of Vec3s (eg [[0, 0, 0], ...])
+                    const count = 10;
+                    const points = (line.points = []);
+                    for (let i = 0; i < count; i++) points.push(new Vec3());
+
+                    line.polyline = new Polyline(gl, {
+                        points,
+                        vertex,
+                        uniforms: {
+                            uColor: { value: new Color(color) },
+                            uThickness: { value: 1 },
+                        },
+                    });
+
+                    line.polyline.mesh.setParent(scene);
+
+                    lines.push(line);
+                });
+
+                // Call initial resize after creating the polylines
+                resize();
+
+                // Add handlers to get mouse position
+                const mouse = new Vec3();
+                if ('ontouchstart' in window) {
+                    window.addEventListener('touchstart', updateMouse, false);
+                    window.addEventListener('touchmove', updateMouse, false);
+                } else {
+                    window.addEventListener('mousemove', updateMouse, false);
+                }
+
+                function updateMouse(e) {
+                    if (e.changedTouches && e.changedTouches.length) {
+                        e.x = e.changedTouches[0].pageX;
+                        e.y = e.changedTouches[0].pageY;
+                    }
+                    if (e.x === undefined) {
+                        e.x = e.pageX;
+                        e.y = e.pageY;
+                    }
+
+                    // Get mouse value in -1 to 1 range, with y flipped
+                    mouse.set((e.x / gl.renderer.width) * 2 - 1, (e.y / gl.renderer.height) * -2 + 1, 0);
+                }
+
+                const tmp = new Vec3();
+
+                requestAnimationFrame(update);
+                function update(t) {
+                    requestAnimationFrame(update);
+
+                    lines.forEach((line) => {
+                        // Update polyline input points
+                        for (let i = line.points.length - 1; i >= 0; i--) {
+                            if (!i) {
+                                // For the first point, spring ease it to the mouse position
+                                tmp.copy(mouse).add(line.mouseOffset).sub(line.points[i]).multiply(line.spring);
+                                line.mouseVelocity.add(tmp).multiply(line.friction);
+                                line.points[i].add(line.mouseVelocity);
+                            } else {
+                                // The rest of the points ease to the point in front of them, making a line
+                                line.points[i].lerp(line.points[i - 1], 0.9);
+                            }
+                        }
+                        line.polyline.updateGeometry();
+                    });
+
+                    renderer.render({ scene });
+                }
+            }
+        }
+
+        window.initCanvas = initCanvas
+
+    </script> -->
+    
+<!-- //<script src="js/ogl-master/src/index.js"></script>     -->
+    <!-- <canvas width="3840" height="1036" id="pageCanvas" style="width: 1920px; height: 518px;"></canvas> -->
+
 </body>
 
 </html>

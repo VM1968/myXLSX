@@ -45,7 +45,7 @@ const position = ["left", "right", "top", "bottom"];
 
 
 //кодировки цвета 
-https://stackoverflow.com/questions/2353211/hsl-to-rgb-color-conversion
+//https://stackoverflow.com/questions/2353211/hsl-to-rgb-color-conversion
 function RGBToHSL(R, G, B) {
     let r = R / 255;
     let g = G / 255;
